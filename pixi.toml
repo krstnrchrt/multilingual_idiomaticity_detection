@@ -1,0 +1,123 @@
+[project]
+authors = [
+    "Maria Manina <maria.manina@uni-potsdam.de>",
+    "Kristina Richert <kristina.richert@uni-potsdam.de",
+    "Arne Schernich <arne.schernich@uni-potsdam.de>",
+]
+channels = ["conda-forge"]
+name = "idiom-detection"
+platforms = ["win-64", "linux-64", "osx-64"]
+version = "0.1.0"
+
+[tasks]
+build_cpu_container = { cmd = [
+    "docker",
+    "build",
+    "--platform=linux/amd64", # updated for MacM1
+    "--build-arg",
+    "GPU_SUPPORT=0",
+    "--tag=slid-cpu",
+    ".",
+    "--progress=plain"
+] }
+build_gpu_container = { cmd = [
+    "docker",
+    "build",
+    "--build-arg",
+    "GPU_SUPPORT=1",
+    "--tag=slid-gpu",
+    "."
+] }
+run_cpu_container = { cmd = [
+    "docker",
+    "run",
+    "--volume=./results:/slid/results",
+    "--volume=./wandb:/slid/wandb",
+    "--volume=./wandb/artifacts:/slid/wandb/artifacts",
+    "--volume=./wandb/logs:/slid/wandb/logs",
+    "--volume=./wandb/cache:/.cache/wandb",
+    "--rm",
+    "--detach",
+    "--name=slid-cpu",
+    "slid-cpu"
+] }
+run_gpu_container = { cmd = [
+    "docker",
+    "run",
+    "--volume=./results:/slid/results",
+    "--volume=./wandb:/slid/wandb",
+    "--volume=./wandb/artifacts:/slid/wandb/artifacts",
+    "--volume=./wandb/logs:/slid/wandb/logs",
+    "--volume=./wandb/cache:/.cache/wandb",
+    "--gpus=all",
+    "--rm",
+    "--detach",
+    "--name=slid-gpu",
+    "slid-gpu"
+] }
+
+[dependencies]
+python = ">=3.12"
+
+[feature.dev-utils.dependencies]
+pixi-pycharm = "*"
+
+[feature.pytorch-cpu.dependencies]
+pytorch-cpu = "*"
+
+[feature.pytorch-gpu]
+platforms = ["win-64", "linux-64"]
+
+[feature.pytorch-gpu.system-requirements]
+cuda = "12.0"
+
+[feature.pytorch-gpu.dependencies]
+cuda-version = "12.6.*"
+cuda-compiler = "*"
+cuda-nvcc = "*"
+cuda-tools = "*"
+cuda-cccl = "*"
+cuda-cupti = "*"
+cuda-cudart = "*"
+pytorch-gpu = "*"
+
+[feature.general.dependencies]
+numpy = "*"
+scikit-learn = "*"
+spacy = "*"
+nltk = "*"
+transformers = "*"
+peft = "*"
+accelerate = "*"
+evaluate = "*"
+ray-tune = "*"
+hyperopt = "*"
+datasets = "*"
+bayesian-optimization = "1.5.1.*"
+wandb = "*"
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
+plotly = "*"
+notebook = "*"
+jupyter = "*"
+
+[feature.general.pypi-dependencies]
+kaleido = "*"
+sklearn_crfsuite = "*"
+
+## Create envirnoments for development
+# When GPU as an accelerator is available
+[environments.slid-dev-gpu]
+features = ["general", "pytorch-gpu", "dev-utils"]
+# When GPU as an accelerator is NOT available
+[environments.slid-dev-cpu]
+features = ["general", "pytorch-cpu", "dev-utils"]
+
+## Create environments for delivery
+# When GPU as an accelerator is available
+[environments.slid-prod-gpu]
+features = ["general", "pytorch-gpu"]
+# When GPU as an accelerator is NOT available
+[environments.slid-prod-cpu]
+features = ["general", "pytorch-cpu"]
