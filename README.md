@@ -1,4 +1,4 @@
-# Multilingual Idiomaticity Detection (SLID)
+# Multilingual Idiomaticity Detection
 
 
 A group research project for **SemEval 2022 Task 2, Subtask A** — binary classification of multi-word expressions (MWEs) as **idiomatic** or **literal** in context. The system fine-tunes [ModernBERT-base](https://huggingface.co/answerdotai/ModernBERT-base) with Bayesian hyperparameter search via Ray Tune and tracks experiments with Weights & Biases.
